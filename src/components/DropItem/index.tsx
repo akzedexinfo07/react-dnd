@@ -1,7 +1,6 @@
 import update from "immutability-helper";
 import type { CSSProperties, Dispatch, FC, SetStateAction } from "react";
-import { useCallback } from "react";
-import type { XYCoord } from "react-dnd";
+import { useCallback, useRef } from "react";
 import { useDrop } from "react-dnd";
 
 import { Box } from "../Box";
@@ -37,6 +36,8 @@ export const DropItem: FC<ContainerProps> = ({
   boxes,
   setBoxes,
 }) => {
+  const boundingBox = useRef<DOMRect | null>(null);
+
   const moveBox = useCallback(
     (id: string, left: number, top: number, title: string) => {
       setBoxes((prevBoxes) => {
@@ -63,22 +64,52 @@ export const DropItem: FC<ContainerProps> = ({
     [setBoxes]
   );
 
-  const [, drop] = useDrop(
+  const [{ isOver, canDrop }, drop] = useDrop(
     () => ({
       accept: "box",
       drop(item: DragItem, monitor) {
+        /*
         const delta = monitor.getDifferenceFromInitialOffset() as XYCoord;
+        console.log({ item, delta });
         const left = Math.round(item.left + delta.x);
         const top = Math.round(item.top + delta.y);
         moveBox(item.id, left, top, item.title);
         return undefined;
+        */
+        const offset = monitor.getSourceClientOffset();
+        if (offset && boundingBox.current) {
+          const dropTargetXy = boundingBox.current;
+          console.log("dropTargetXy", dropTargetXy);
+          console.log("dropTargetXy offset", offset);
+          moveBox(
+            item.id,
+            offset.x - dropTargetXy.left,
+            offset.y - dropTargetXy.top,
+            item.title
+          );
+        }
       },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+      hover: (draggingItem, monitor) => {},
     }),
     [moveBox]
   );
 
+  console.log({ isOver, canDrop });
+
+  function combinedRef(el: HTMLDivElement | null) {
+    drop(el);
+    if (el) {
+      console.log("ELEMENT", el);
+      boundingBox.current = el.getBoundingClientRect();
+    }
+  }
+
   return (
-    <div ref={drop} style={styles}>
+    <div ref={combinedRef} style={styles}>
       {Object.keys(boxes).map((key) => {
         const { left, top, title } = boxes[key] as {
           top: number;

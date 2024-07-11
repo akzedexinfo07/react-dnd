@@ -26,6 +26,9 @@ const DragItem = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    // end(draggedItem, monitor) {
+    //   const draggingItemMonitor = monitor.getClientOffset();
+    // },
   }));
 
   return (
