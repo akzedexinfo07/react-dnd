@@ -14,11 +14,13 @@ const DragItem = ({
   item,
   boxes,
   setBoxes,
+  className,
 }: {
   id: string;
   item: DragItemProps;
   boxes: BoxesTypes;
   setBoxes: Dispatch<SetStateAction<BoxesTypes>>;
+  className: string;
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "box",
@@ -36,7 +38,8 @@ const DragItem = ({
       ref={drag}
       className={classNames(
         "cursor-move border border-gray-300 p-2 rounded m-1 bg-pink-200",
-        isDragging ? "opacity-50" : "opacity-100"
+        isDragging ? "opacity-50" : "opacity-100",
+        className
       )}
     >
       {item.title}
